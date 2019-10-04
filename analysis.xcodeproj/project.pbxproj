@@ -26,6 +26,7 @@
 		C50808332345A2A2004DE0FB /* analysis */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = analysis; sourceTree = BUILT_PRODUCTS_DIR; };
 		C50808362345A2A2004DE0FB /* main.c */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.c; path = main.c; sourceTree = "<group>"; };
 		C508083D2345A343004DE0FB /* prioQ.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = prioQ.h; sourceTree = "<group>"; };
+		C53AAE3E2347DF19004B5B85 /* dijkstra.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = dijkstra.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -60,6 +61,7 @@
 			children = (
 				C50808362345A2A2004DE0FB /* main.c */,
 				C508083D2345A343004DE0FB /* prioQ.h */,
+				C53AAE3E2347DF19004B5B85 /* dijkstra.h */,
 			);
 			path = analysis;
 			sourceTree = "<group>";

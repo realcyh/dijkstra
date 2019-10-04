@@ -8,99 +8,19 @@
 
 #include <stdio.h>
 #include <stdbool.h>
+#include <time.h>
 #include "prioQ.h"
-
-#define INF 1.0/0
-
-typedef struct Vertex {
-    int index;
-    double dist;
-//    PrioQ * list;
-    struct Vertex * preVertex;
-} Vertex;
-
-
-//PrioQ **adjList_create(char name[], int N, FILE *fpRead) {
-
-
-//Vertex *graph_create(char name[], int N, FILE *fpRead) {
-//    Vertex *A= malloc(N*sizeof(struct Vertex));
-//    if (A == NULL) {
-//        printf("Error: malloc failed in creating graph.\n");
-//        return 0;
-//    }
-//
-//    int nodeIndex, edgeIndex;
-//    double edgeWeight;
-//    int i;
-//    for (i=0; i<N; i++) {
-//        A[i].index = i;
-//        // printf("%d ", A[i].index);
-//        A[i].dist = INF;  // inf
-//        A[i].preVertex = NULL;
-//        A[i].list = PQ_create();
-//    }
-//    while (!feof(fpRead)) {
-//        fscanf(fpRead, "%d %d %lf", &nodeIndex, &edgeIndex, &edgeWeight);
-//        int isSucceed = 0;
-//        isSucceed = PQ_insert(A[nodeIndex].list, edgeIndex, edgeWeight);
-//        printf("%d %d %f\n", A[nodeIndex].index, edgeIndex, edgeWeight);
-//        if (!isSucceed) {
-//            printf("Adjacency list generating error.\n");
-//            return 0;
-//        }
-//    }
-//    fclose(fpRead);
-//
-//    return A;
-//}
-
-Vertex *dijkstra(PrioQ ** A, int N, int i) {
-    Vertex * nodes =malloc((N+1)*sizeof(struct Vertex));
-    PrioQ * PQ = PQ_create();
-    bool visited[N];
-    
-    int j;
-    int index = -1;
-    for (j=0; j<N; j++) {
-        nodes[j].index = j;
-        nodes[j].dist = INF;
-        nodes[j].preVertex = NULL;
-        visited[j] = false;
-    }
-    nodes[i].dist = 0;
-    PQ_insert(PQ, i, nodes[i].dist);
-    //PQ_print(PQ);
-    while (PQ_count(PQ)) {
-        index = PQ_delete(PQ);
-        PrioQ * p = A[index];
-        //printf("delete:%d\n", index);
-        visited[index] = true;
-        while (p->next != NULL) {
-            if (!visited[p->next->edgeIndex] && (nodes[index].dist+p->next->weight)<nodes[p->next->edgeIndex].dist ) {
-                
-                PQ_insert(PQ, p->next->edgeIndex, (nodes[index].dist+p->next->weight));
-                //printf("%d: %f\n", p->next->edgeIndex, (path[index].dist+p->next->weight));
-                nodes[p->next->edgeIndex].dist = (nodes[index].dist+p->next->weight);
-                nodes[p->next->edgeIndex].preVertex = &nodes[index];
-            }
-            p = p->next;
-        }
-    }
-    nodes[N].index = index;
-    nodes[N].dist = nodes[index].dist;
-    nodes[N].preVertex = &nodes[index];
-    //printf("\nlast:%d %f", path[N].index, path[N].dist);
-
-    return nodes;
-}
+#include "dijkstra.h"
 
 
 int main(int argc, const char * argv[]) {
-    char name[] = "topology";
+    char name[] = "topology100";   //topology
+    char output[] = "output_100"; //output
     int N, i;
     int nodeIndex, edgeIndex;
     double edgeWeight;
+    clock_t start, finish;
+    double time;
     
     FILE *fpRead = fopen(name,"r");
     if (fpRead == NULL) {
@@ -108,7 +28,9 @@ int main(int argc, const char * argv[]) {
         return 0;
     }
     fscanf(fpRead, "%d", &N);
-//  create adjacency list
+    // create adjacency list to represent the graph
+    // each A[i] points to a priority queue represents all the nodes
+    // connected to node i with edge weight
     PrioQ *A[N];
     for (i=0; i<N; i++) {
         A[i] = PQ_create();
@@ -118,6 +40,7 @@ int main(int argc, const char * argv[]) {
         int isSucceed = 0;
         isSucceed = PQ_insert(A[nodeIndex], edgeIndex, edgeWeight);
         //printf("%d %d %f\n", nodeIndex, edgeIndex, edgeWeight);
+        //PQ_print(A[nodeIndex]);
         if (!isSucceed) {
             printf("Adjacency list generating error.\n");
             return 0;
@@ -138,7 +61,7 @@ int main(int argc, const char * argv[]) {
 //        printf("%d ", p->index);
 //        p = p->preVertex;
 //    }
-    
+    start = clock();
     Vertex *V[N];
     PrioQ *path[N];
     double maxDist[N];
@@ -148,7 +71,7 @@ int main(int argc, const char * argv[]) {
         path[i] = PQ_create();
     }
     
-    for (i=0; i<N; i++) {
+    for (i=0; i<N; i++) { // call dijkstra for N times
         V[i] = dijkstra(A, N, i);
         Vertex *q;
         q = V[i][N].preVertex;
@@ -162,17 +85,21 @@ int main(int argc, const char * argv[]) {
             q = q->preVertex;
         }
     }
-    FILE *fpWrite = fopen("output", "w");
+    finish = clock();
+    time = (double)(finish-start)/CLOCKS_PER_SEC;
+    printf("%f seconds\n", time);
     
+    FILE *fpWrite = fopen(output, "w");
     printf("%f\n", diameter);
     fprintf(fpWrite, "%f\n", diameter);
     for (i=0; i<N; i++) {
-        printf("%d %f ", i, maxDist[i]);
+        //printf("%d %f ", i, maxDist[i]);
         fprintf(fpWrite, "%d %f ", i, maxDist[i]);
-        PQ_print(path[i]);
+        //PQ_print(path[i]);
         PQ_print_file(path[i], fpWrite);
     }
-    
+    fclose(fpWrite);
+    // release memory
     for (i=0; i<N; i++) {
         PQ_free(path[i]);
         PQ_free(A[i]);
